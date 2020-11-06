@@ -1,6 +1,6 @@
 {
   "name": "@primecoder/nodejs-persisted-cache",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "a Node.js cache that can persist to (.json) file",
   "main": "index.js",
   "scripts": {
