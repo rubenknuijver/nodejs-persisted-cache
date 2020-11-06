@@ -2,12 +2,13 @@
   "name": "@primecoder/nodejs-persisted-cache",
   "version": "1.0.2",
   "description": "a Node.js cache that can persist to (.json) file",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
     "test": "echo \"no test specified\" && exit 0",
     "build": "tsc --build",
     "format": "prettier --write \"src/**/*.ts\"",
-    "lint": "tslint -p tsconfig.json"
+    "lint": "tslint -p tsconfig.json",
+    "bump": "npm version"
   },
   "files": [
     "lib/**/*"
