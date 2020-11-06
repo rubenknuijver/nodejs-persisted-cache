@@ -1,101 +1,140 @@
-import fs from "fs";
-import path from "path";
+import _fs_ from 'fs';
+import _path_ from 'path';
 
-namespace Dir {
-    const _0777 = parseInt('0777', 8);
+const _0777 = parseInt('0777', 8);
 
-    export function mkdirP(p: string, opts: any, f: (...args: any[]) => void, made?: string | null) {
-        if (typeof opts === 'function') {
-            f = opts;
-            opts = {};
-        }
-        else if (!opts || typeof opts !== 'object') {
-            opts = { mode: opts };
-        }
+/**
+ * No Operation, just pass the input to the output
+ * @param input
+ */
+function noop<T>(input: T): T { return input; }
 
-        var mode = opts.mode;
-        var xfs = opts.fs || fs;
+/**
+ * mkdir full path
+ * @param path 
+ * @param opts 
+ * @param callback 
+ * @param made 
+ */
+export function mkdirP(path: string, opts: any, callback: (...args: any[]) => void, made?: string | null) {
+  if (typeof opts === 'function') {
+    callback = opts;
+    opts = {};
+  } else if (!opts || typeof opts !== 'object') {
+    opts = { mode: opts };
+  }
 
-        if (mode === undefined) {
-            mode = _0777 & (~process.umask());
-        }
-        if (!made) made = null;
+  let mode = opts.mode;
+  const xfs = opts.fs || _fs_;
 
-        var cb = f || function (..._: any[]) { };
-        p = path.resolve(p);
+  if (mode === undefined) {
+    /* tslint:disable:no-bitwise */
+    mode = _0777 & ~process.umask();
+    /* tslint:enable:no-bitwise */
+  }
+  if (!made) made = null;
 
-        xfs.mkdir(p, mode, (er: NodeJS.ErrnoException | null) => {
-            if (!er) {
-                made = made || p;
-                return cb(null, made);
-            }
-            switch (er.code) {
-                case 'ENOENT':
-                    mkdirP(path.dirname(p), opts, (er, made) => {
-                        if (er) cb(er, made);
-                        else mkdirP(p, opts, cb, made);
-                    });
-                    break;
+  const cb = callback || noop;
+  path = _path_.resolve(path);
 
-                // In the case of any other error, just see if there's a dir
-                // there already.  If so, then hooray!  If not, then something
-                // is borked.
-                default:
-                    xfs.stat(p, function (er2: NodeJS.ErrnoException | null, stat: fs.BigIntStats) {
-                        // if the stat fails, then that's super weird.
-                        // let the original error be the failure reason.
-                        if (er2 || !stat.isDirectory()) cb(er, made)
-                        else cb(null, made);
-                    });
-                    break;
-            }
-        });
+  xfs.mkdir(path, mode, (er: NodeJS.ErrnoException | null) => {
+    if (!er) {
+      made = made || path;
+      return cb(null, made);
     }
+    switch (er.code) {
+      case 'ENOENT':
+        enoent(path, opts, cb);
+        break;
 
-    export function sync(p: string, opts?: any, made?: string | null): string | null {
-        if (!opts || typeof opts !== 'object') {
-            opts = { mode: opts };
-        }
-
-        var mode = opts.mode;
-        var xfs = opts.fs || fs;
-
-        if (mode === undefined) {
-            mode = _0777 & (~process.umask());
-        }
-        if (!made) made = null;
-
-        p = path.resolve(p);
-
-        try {
-            xfs.mkdirSync(p, mode);
-            made = made || p;
-        }
-        catch (err0) {
-            switch (err0.code) {
-                case 'ENOENT':
-                    made = sync(path.dirname(p), opts, made);
-                    sync(p, opts, made);
-                    break;
-
-                // In the case of any other error, just see if there's a dir
-                // there already.  If so, then hooray!  If not, then something
-                // is borked.
-                default:
-                    var stat;
-                    try {
-                        stat = xfs.statSync(p);
-                    }
-                    catch (err1) {
-                        throw err0;
-                    }
-                    if (!stat.isDirectory()) throw err0;
-                    break;
-            }
-        }
-
-        return made;
+      default:
+        skipIfDirectoryExists(xfs, path, cb, er, made);
+        break;
     }
+  });
 }
 
-export default Dir;
+/**
+ * In the case of any other error, just see if there's a dir there already.
+ * If so, then hooray!
+ * If not, then something is borked.
+ * @param xfs 
+ * @param path 
+ * @param fn 
+ * @param originalError 
+ * @param made 
+ */
+function skipIfDirectoryExists(xfs: any, path: string, fn: (...args: any[]) => void, originalError: NodeJS.ErrnoException, made: string | null | undefined) {
+  xfs.stat(path, (er2: NodeJS.ErrnoException | null, stat: _fs_.BigIntStats) => {
+    if (er2 || !stat.isDirectory())
+      fn(originalError, made);
+    else
+      fn(null, made);
+  });
+}
+
+/**
+ * 
+ * @param path 
+ * @param opts 
+ * @param callback 
+ */
+function enoent(path: string, opts: any, callback: (...args: any[]) => void) {
+  mkdirP(_path_.dirname(path), opts, (er: NodeJS.ErrnoException | null, made: string | null) => {
+    if (er)
+      callback(er, made);
+    else
+      mkdirP(path, opts, callback, made);
+  });
+}
+
+/**
+ * Synchronous mkdir(2) - create a directory full path.
+ * @param p 
+ * @param opts 
+ * @param made 
+ */
+export function sync(p: string, opts?: any, made?: string | null): string | null {
+  if (!opts || typeof opts !== 'object') {
+    opts = { mode: opts };
+  }
+
+  let mode = opts.mode;
+  const xfs = opts.fs || _fs_;
+
+  if (mode === undefined) {
+    /* tslint:disable:no-bitwise */
+    mode = _0777 & ~process.umask();
+    /* tslint:enable:no-bitwise */
+  }
+  if (!made) made = null;
+
+  p = _path_.resolve(p);
+
+  try {
+    xfs.mkdirSync(p, mode);
+    made = made || p;
+  } catch (err0) {
+    switch (err0.code) {
+      case 'ENOENT':
+        made = sync(_path_.dirname(p), opts, made);
+        sync(p, opts, made);
+        break;
+
+      // In the case of any other error, just see if there's a dir
+      // there already.  If so, then hooray!  If not, then something
+      // is borked.
+      default:
+        let stat;
+        try {
+          stat = xfs.statSync(p);
+        } catch (err1) {
+          throw err0;
+        }
+        if (!stat.isDirectory()) throw err0;
+        break;
+    }
+  }
+
+  return made;
+}
