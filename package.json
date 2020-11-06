@@ -1,0 +1,24 @@
+{
+  "name": "@primecoder/nodejs-persisted-cache",
+  "version": "1.0.0",
+  "description": "a Node.js cache that can persist to (.json) file",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rubenknuijver/nodejs-persisted-cache.git"
+  },
+  "keywords": [
+    "cache",
+    "persisted",
+    "nodejs"
+  ],
+  "author": "Prime",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rubenknuijver/nodejs-persisted-cache/issues"
+  },
+  "homepage": "https://github.com/rubenknuijver/nodejs-persisted-cache#readme"
+}
