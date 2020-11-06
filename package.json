@@ -4,7 +4,8 @@
   "description": "a Node.js cache that can persist to (.json) file",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"no test specified\" && exit 0",
+    "build": "tsc --build"
   },
   "repository": {
     "type": "git",
@@ -20,5 +21,15 @@
   "bugs": {
     "url": "https://github.com/rubenknuijver/nodejs-persisted-cache/issues"
   },
-  "homepage": "https://github.com/rubenknuijver/nodejs-persisted-cache#readme"
+  "homepage": "https://github.com/rubenknuijver/nodejs-persisted-cache#readme",
+  "devDependencies": {
+    "@types/node": "^14.11.5",
+    "@types/uuid": "^8.3.0",
+    "typescript": "^3.9.7"
+  },
+  "dependencies": {
+    "node-cache": "^5.1.2",
+    "rmdir": "^1.2.0",
+    "uuid": "^8.3.0"
+  }
 }
