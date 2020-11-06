@@ -1,6 +1,7 @@
-import dir from './dir';
+import * as dir from './dir';
 import PersistentCache from './persistentCache';
-import { CacheService, PersistentCacheService } from './cacheService';
+import CacheService from './cacheService';
+import PersistentCacheService from './persistentCacheService';
 
 const ttlHour = 60 * 60;
 const ttlDay = ttlHour * 24;
